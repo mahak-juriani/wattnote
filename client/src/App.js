@@ -27,7 +27,7 @@ function App() {
         setFilteredNotes(response.data);
       })
       .catch((error) => console.error("Error fetching notes:", error));
-  }, []);
+  }, [apiUrl]);
 
   const handleNoteAdded = (newNote) => {
     setNotes([newNote, ...notes]);

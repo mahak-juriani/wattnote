@@ -15,7 +15,7 @@ function NoteList({ notes,setNotes, filteredNotes, onNoteDeleted, setFilteredNot
         setAvailableTags(response.data);
       })
       .catch(error => console.error('Error fetching tags:', error));
-  },[notes,filteredNotes])
+  },[notes,filteredNotes,apiUrl])
   
 
   const deleteTag = (e) => {
