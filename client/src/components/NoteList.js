@@ -47,32 +47,32 @@ function NoteList({ notes,setNotes, filteredNotes, onNoteDeleted, setFilteredNot
       .catch((error) => console.error("Error deleting note:", error));
   }
 
-  const handleDragStart = (e, noteId) => {
-    dragItem.current = e.target;
-    offset.current = {
-      x: e.clientX - e.target.getBoundingClientRect().left,
-      y: e.clientY - e.target.getBoundingClientRect().top,
-    };
-    e.target.style.position = "absolute";
-    e.target.style.zIndex = 1000;
-  };
+  // const handleDragStart = (e, noteId) => {
+  //   dragItem.current = e.target;
+  //   offset.current = {
+  //     x: e.clientX - e.target.getBoundingClientRect().left,
+  //     y: e.clientY - e.target.getBoundingClientRect().top,
+  //   };
+  //   e.target.style.position = "absolute";
+  //   e.target.style.zIndex = 1000;
+  // };
 
-  const handleDrag = (e) => {
-    if (dragItem.current) {
-      const element = dragItem.current;
-      if (element) {
-        element.style.left = `${e.clientX - offset.current.x}px`;
-        element.style.top = `${e.clientY - offset.current.y}px`;
-      }
-    }
-  };
+  // const handleDrag = (e) => {
+  //   if (dragItem.current) {
+  //     const element = dragItem.current;
+  //     if (element) {
+  //       element.style.left = `${e.clientX - offset.current.x}px`;
+  //       element.style.top = `${e.clientY - offset.current.y}px`;
+  //     }
+  //   }
+  // };
 
-  const handleDragEnd = () => {
-    if (dragItem.current) {
-      dragItem.current.style.zIndex = "auto";
-    }
-    dragItem.current = null;
-  };
+  // const handleDragEnd = () => {
+  //   if (dragItem.current) {
+  //     dragItem.current.style.zIndex = "auto";
+  //   }
+  //   dragItem.current = null;
+  // };
 
   const handleDeleteClick = (id, onNoteDeleted) => {
     axios
