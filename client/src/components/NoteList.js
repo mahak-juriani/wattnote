@@ -5,8 +5,8 @@ import { faTrash } from "@fortawesome/free-solid-svg-icons";
 
 function NoteList({ notes,setNotes, filteredNotes, onNoteDeleted, setFilteredNotes, handleTagSearchClick, setSearchTerm, searchTerm  }) {
   const apiUrl = process.env.REACT_APP_API_URL;
-  const dragItem = useRef(null);
-  const offset = useRef({ x: 0, y: 0 });
+  // const dragItem = useRef(null);
+  // const offset = useRef({ x: 0, y: 0 });
 
   const [availableTags, setAvailableTags] = useState([]);
   useEffect(()=>{
