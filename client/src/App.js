@@ -31,10 +31,12 @@ function App() {
 
   const handleNoteAdded = (newNote) => {
     setNotes([newNote, ...notes]);
+    setFilteredNotes([newNote, ...filteredNotes])
   };
 
   const handleNoteDeleted = (deletedId) => {
     setNotes(notes.filter((note) => note.id !== deletedId));
+    setFilteredNotes(filteredNotes.filter((note) => note.id !== deletedId));
   };
 
   const handleTagSearchClick = () => {
@@ -53,6 +55,7 @@ function App() {
         <AddNoteForm onNoteAdded={handleNoteAdded} />
         <NoteList
           notes={notes}
+          setNotes = {setNotes}
           filteredNotes={filteredNotes}
           onNoteDeleted={handleNoteDeleted}
           setFilteredNotes={setFilteredNotes}

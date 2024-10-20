@@ -12,7 +12,7 @@ if (title && content) {
     axios.post(`${apiUrl}/extract-tags`, { content })
       .then(response => {
         const tags = response.data.tags;
-        axios.post(`${apiUrl}/api/notes`, { title, content, tags })
+        axios.post(`${apiUrl}/notes`, { title, content, tags })
           .then(response => {
             onNoteAdded(response.data);
             setTitle('');

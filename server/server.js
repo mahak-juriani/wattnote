@@ -165,6 +165,22 @@ app.delete('/api/notes/:id', async (req, res) => {
     
   });
 
+app.delete('/api/tags/:noteId/:tagName', async (req, res)=>{
+  const { noteId, tagName } = req.params;
+
+  try{
+
+    console.log(noteId, tagName)
+    await runAsync(`DELETE FROM tags WHERE noteId = ? and tag = ?`, [noteId,tagName]);
+    res.status(200).json({ message: 'tag deleted successfully', noteId, tagName });
+
+  }catch(err){
+    return res.status(500).json({ error: 'Failed to delete tag' });
+
+  }
+
+})
+
 app.get('/api/tags', (req, res) => {
     db.all(`SELECT tag from tags`, [], (err, rows) => {
       if (err) {

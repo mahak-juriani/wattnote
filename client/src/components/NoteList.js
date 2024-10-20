@@ -3,7 +3,7 @@ import axios from "axios";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faTrash } from "@fortawesome/free-solid-svg-icons";
 
-function NoteList({ notes, filteredNotes, onNoteDeleted, setFilteredNotes, handleTagSearchClick, setSearchTerm, searchTerm  }) {
+function NoteList({ notes,setNotes, filteredNotes, onNoteDeleted, setFilteredNotes, handleTagSearchClick, setSearchTerm, searchTerm  }) {
   const apiUrl = process.env.REACT_APP_API_URL;
   const dragItem = useRef(null);
   const offset = useRef({ x: 0, y: 0 });
@@ -15,8 +15,37 @@ function NoteList({ notes, filteredNotes, onNoteDeleted, setFilteredNotes, handl
         setAvailableTags(response.data);
       })
       .catch(error => console.error('Error fetching tags:', error));
-  },[])
+  },[notes,filteredNotes])
   
+
+  const deleteTag = (e) => {
+    // call delete tag api
+    const noteId = e.target.dataset.noteid;
+    const tagName = e.target.name
+    axios
+      .delete(`${apiUrl}/tags/${noteId}/${tagName}`)
+      .then((response) => {
+        const {noteId, tagName} = response.data;
+        
+        setFilteredNotes(notes.map((note) => ({
+          id: note.id,
+          title: note.title,
+          content: note.content,
+          createdAt: note.createdAt,
+          tags: noteId == note.id ? note.tags.filter((tag)=>tag !== tagName): note.tags
+        })));
+
+        setNotes(notes.map((note) => ({
+          id: note.id,
+          title: note.title,
+          content: note.content,
+          createdAt: note.createdAt,
+          tags: noteId == note.id ? note.tags.filter((tag)=>tag !== tagName): note.tags
+        })));
+
+      })
+      .catch((error) => console.error("Error deleting note:", error));
+  }
 
   const handleDragStart = (e, noteId) => {
     dragItem.current = e.target;
@@ -92,6 +121,7 @@ function NoteList({ notes, filteredNotes, onNoteDeleted, setFilteredNotes, handl
               {note.tags.map((tag) => (
                 <p className="tag" key={tag}>
                   {tag}
+                  <button data-noteid={note.id} name={tag} onClick={deleteTag}>x</button>
                 </p>
               ))}
             </span>
