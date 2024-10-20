@@ -32,7 +32,7 @@ function NoteList({ notes,setNotes, filteredNotes, onNoteDeleted, setFilteredNot
           title: note.title,
           content: note.content,
           createdAt: note.createdAt,
-          tags: noteId == note.id ? note.tags.filter((tag)=>tag !== tagName): note.tags
+          tags: noteId === note.id ? note.tags.filter((tag)=>tag !== tagName): note.tags
         })));
 
         setNotes(notes.map((note) => ({
@@ -40,7 +40,7 @@ function NoteList({ notes,setNotes, filteredNotes, onNoteDeleted, setFilteredNot
           title: note.title,
           content: note.content,
           createdAt: note.createdAt,
-          tags: noteId == note.id ? note.tags.filter((tag)=>tag !== tagName): note.tags
+          tags: noteId === note.id ? note.tags.filter((tag)=>tag !== tagName): note.tags
         })));
 
       })
