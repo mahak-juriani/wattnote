@@ -1,0 +1,10 @@
+{
+  "dependencies": {
+    "compromise": "^14.14.2",
+    "cors": "^2.8.5",
+    "express": "^4.21.1",
+    "mongoose": "^8.7.2",
+    "natural": "^8.0.1",
+    "sqlite3": "^5.1.7"
+  }
+}
