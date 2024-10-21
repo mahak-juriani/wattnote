@@ -39,7 +39,7 @@ const port = 5000;
 // Middleware
 app.use(bodyParser.json());
 app.use(cors({
-  origin : ['https://wattnote.vercel.app/'],
+  origin : [''],
   methods : ["POST", "GET", "DELETE"],
   credentials : true
 }));
