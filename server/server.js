@@ -205,6 +205,10 @@ app.get('/api/tags', (req, res) => {
     });
 });
 
+app.get('/', (req, res) => {
+  res.json("Server is running")
+});
+
 app.listen(port, () => {
   console.log(`Server is running on http://localhost:${port}`);
 });
