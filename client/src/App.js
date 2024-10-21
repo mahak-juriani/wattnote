@@ -5,7 +5,7 @@ import AddNoteForm from "./components/AddNoteForm";
 import axios from "axios";
 
 function App() {
-  const apiUrl = 'https://wattnote.vercel.app';
+  const apiUrl = process.env.REACT_APP_API_URL;
   axios.default.withCredentials = true;
   const [notes, setNotes] = useState([]);
   const [filteredNotes, setFilteredNotes] = useState(notes);
