@@ -171,4 +171,30 @@ app.listen(port, () => {
   console.log(`Server is running on port ${port}`);
 });
 
+app.post('/api/tags', (req, res) => {
+  const { noteId, tag } = req.body;
+
+  if (!noteId || !tag) {
+    return res.status(400).json({ error: "Note ID and tag are required" });
+  }
+
+  // Add the new tag to the note in the database
+  Note.findById(noteId)
+    .then((note) => {
+      if (!note) {
+        return res.status(404).json({ error: "Note not found" });
+      }
+
+      note.tags.push(tag); // Add the new tag to the tags array
+      return note.save();
+    })
+    .then((updatedNote) => {
+      res.status(200).json(updatedNote);
+    })
+    .catch((error) => {
+      console.error("Error adding tag:", error);
+      res.status(500).json({ error: "Failed to add tag" });
+    });
+});
+
 module.exports = app;

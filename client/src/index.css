@@ -89,6 +89,7 @@ button:hover {
   position: relative;
   background-color: #ffffff;
   padding: 1rem;
+  padding-bottom: 3rem;
   border-radius: 0.5rem;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   transition: transform 0.2s ease, box-shadow 0.2s ease;
@@ -113,6 +114,15 @@ button:hover {
 .note-card p {
   font-size: 1rem;
 }
+
+.created-at {
+  position: absolute;
+  bottom: 0.5rem;
+  right: 1rem;
+  font-size: 0.875rem; /* Slightly smaller font size */
+  color: #718096; /* Light text color */
+}
+
 
 .tag {
   display: inline-block;
@@ -199,4 +209,33 @@ button:hover {
 /* CSS for Notes Container */
 .notes-container {
   margin-top: 2rem;
+}
+
+
+/* Container for the input and button */
+.add-tag-container {
+  display: flex;
+  align-items: center; /* Align items vertically in the center */
+  justify-content: flex-start; /* Align items horizontally from the start */
+  gap: 0.5rem; /* Space between the input and button */
+  margin-bottom: 1rem;
+}
+
+.tag-input {
+  flex: 1; /* Make the input take up the remaining horizontal space */
+  max-width: 100%; /* Ensure it doesn't overflow */
+}
+
+.add-tag-button {
+  white-space: nowrap; /* Prevent the button text from wrapping */
+}
+
+.tag-input:focus {
+  outline: none;
+  border-color: #63b3ed; /* Light blue border on focus */
+}
+
+
+.add-tag-button:hover {
+  background-color: #2c5282;
 }

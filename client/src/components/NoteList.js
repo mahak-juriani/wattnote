@@ -8,6 +8,9 @@ function NoteList({ notes,setNotes, filteredNotes, onNoteDeleted, setFilteredNot
   // const dragItem = useRef(null);
   // const offset = useRef({ x: 0, y: 0 });
 
+  // State to track the new tag being added to a note
+  const [newTag, setNewTag] = useState({});
+  
   const [availableTags, setAvailableTags] = useState([]);
   useEffect(()=>{
     axios.get(`${apiUrl}/tags`)
@@ -17,6 +20,34 @@ function NoteList({ notes,setNotes, filteredNotes, onNoteDeleted, setFilteredNot
       .catch(error => console.error('Error fetching tags:', error));
   },[notes,filteredNotes,apiUrl])
   
+    // Handle adding a new tag to a note
+    const handleAddTag = (noteId) => {
+      debugger;
+      const tag = newTag[noteId];
+      if (!tag) return;
+
+      axios
+        .post(`${apiUrl}/tags`, { noteId, tag })
+        .then((response) => {
+          // Update the notes state with the new tag
+          setNotes(
+            notes.map((note) =>
+              note._id === noteId
+                ? { ...note, tags: [...note.tags, tag] }
+                : note
+            )
+          );
+          setFilteredNotes(
+            filteredNotes.map((note) =>
+              note._id === noteId
+                ? { ...note, tags: [...note.tags, tag] }
+                : note
+            )
+          );
+          setNewTag({ ...newTag, [noteId]: "" }); // Clear the input after adding the tag
+        })
+        .catch((error) => console.error("Error adding tag:", error));
+    };
 
   const deleteTag = (e) => {
     // call delete tag api
@@ -126,12 +157,27 @@ function NoteList({ notes,setNotes, filteredNotes, onNoteDeleted, setFilteredNot
                 </p>
               ))}
             </span>
+            {/* Add new tag input field */}
+            <div className="add-tag-container">
+              <input
+                type="text"
+                className="tag-input" 
+                value={newTag[note._id] || ""}
+                onChange={(e) => setNewTag({ ...newTag, [note._id]: e.target.value })}
+                placeholder="Add a tag..."
+              />
+              <button className="add-tag-button" onClick={() => handleAddTag(note._id)}>Add Tag</button>
+            </div>
+
             <button
               className="delete-button"
               onClick={() => handleDeleteClick(note._id, onNoteDeleted)}
             >
               <FontAwesomeIcon icon={faTrash} />
             </button>
+            <p className="created-at">
+              Created on: {new Date(note.createdAt).toLocaleDateString()}
+            </p>
           </div>
         ))}
       </div>
