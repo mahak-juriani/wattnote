@@ -40,7 +40,7 @@ const port = 5000;
 app.use(bodyParser.json());
 app.use(cors({
   origin : ['https://wattnote-client.vercel.app'],
-  methods : ["POST", "GET", "DELETE"],
+  // methods : ["POST", "GET", "DELETE"],
   credentials : true
 }));
 
