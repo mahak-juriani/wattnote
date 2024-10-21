@@ -6,7 +6,7 @@ import axios from "axios";
 
 function App() {
   const apiUrl = 'https://wattnote.vercel.app/';
-
+  axios.default.withCredentials = true;
   const [notes, setNotes] = useState([]);
   const [filteredNotes, setFilteredNotes] = useState(notes);
   const [searchTerm, setSearchTerm] = useState("");
