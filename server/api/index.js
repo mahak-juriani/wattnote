@@ -4,62 +4,56 @@ const cors = require("cors");
 const mongoose = require("mongoose");
 const natural = require("natural");
 const TfIdf = natural.TfIdf;
-const sqlite3 = require('sqlite3').verbose();
 
+const db = require('../config/dbConfig')
 
-// const nlp = require("compromise");
+// Connect to MongoDB (replace with your connection string)
+// mongoose.connect('mongodb://localhost:27017/notes', {
+//   useNewUrlParser: true,
+//   useUnifiedTopology: true,
+// });
 
-
-const db = new sqlite3.Database('notes.db', (err) => {
-    if (err) {
-        console.error(err.message);
-    }
-    console.log('Connected to the SQLite database.');
-});
-
-db.run(`CREATE TABLE IF NOT EXISTS notes (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    title TEXT,
-    content TEXT,
-    createdAt datetime DEFAULT (CURRENT_TIMESTAMP)
-)`);
-
-db.run(`CREATE TABLE IF NOT EXISTS tags (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    noteId INTEGER,
-    tag TEXT,
-    FOREIGN KEY(noteId) REFERENCES notes(id)
-)`);
+// db.on('error', console.error.bind(console, 'MongoDB connection error:'));
+// db.once('open', () => {
+//   console.log('Connected to MongoDB');
+// });
 
 const app = express();
-const port = 5000;
-
-
+const port = 3002;
 
 // Middleware
 app.use(bodyParser.json());
+// app.use(cors({
+//   origin: ['https://wattnote-client.vercel.app'],
+//   credentials: true
+// }));
+
+const allowedOrigins = ['http://localhost:3000', 'https://wattnote-client.vercel.app'];
 app.use(cors({
-  origin : ['https://wattnote-client.vercel.app'],
-  // methods : ["POST", "GET", "DELETE"],
-  credentials : true
+  origin: function (origin, callback) {
+    console.log(allowedOrigins)
+    console.log(origin)
+    if (!origin || allowedOrigins.indexOf(origin) !== -1) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  credentials: true,
 }));
+app.options('*', cors());
 
-app.options('*', cors());  // Allow preflight requests for all routes
+// Define Mongoose Schemas
+const noteSchema = new mongoose.Schema({
+  title: String,
+  content: String,
+  tags: [String],
+  createdAt: { type: Date, default: Date.now },
+});
 
+const Note = mongoose.model('Note', noteSchema);
 
-function runAsync(query, params) {
-    return new Promise((resolve, reject) => {
-        db.run(query, params, function (err) {
-            if (err) {
-                return reject(err);
-            }
-            // Resolve with the last inserted ID
-            resolve(this.lastID);
-        });
-    });
-}
-
-
+// Tag extraction function using natural library
 const extractTags = (text) => {
   const tfidf = new TfIdf();
   tfidf.addDocument(text);
@@ -67,151 +61,114 @@ const extractTags = (text) => {
   tfidf.listTerms(0).forEach((term) => {
     if (term.tfidf > 0.4) tags.push(term.term); // Get terms with high relevance
   });
-
   return tags.slice(0, 5).map((tag) => tag.toLowerCase());
 };
 
-// Step 3: Create a route to extract tags from content
+// Route to extract tags from content
 app.post("/api/extract-tags", (req, res) => {
   const { content } = req.body;
-
   if (!content) {
     return res.status(400).json({ error: "Content is required" });
   }
-
   const tags = extractTags(content);
-
   res.json({ tags });
 });
 
-// Step 4: Create a route to add a new note
+// Route to add a new note
 app.post('/api/notes', async (req, res) => {
-    const { title, content, tags } = req.body;
+  const { title, content, tags } = req.body;
   
-    console.log(title)
-    if (!title || !content) {
-      return res.status(400).json({ error: 'Title and content are required' });
-    }
-  
-    try {
-      const noteId = await runAsync(
-        `INSERT INTO notes (title, content) VALUES (?, ?)`,
-        [title, content]
-      );
-
-      // Insert tags into the tags table
-      for (const tag of tags) {
-        try {
-          await runAsync(`INSERT INTO tags (tag, noteId) VALUES (?, ?)`, [tag, noteId]);
-        } catch (err) {
-          console.warn(err);
-        }
-      }
-  
-      res.status(201).json({ id: noteId, title, content, tags });
-    } catch (err) {
-        console.log(err)
-      res.status(500).json({ error: 'Failed to save note' });
-    }
-});
-  
-app.get('/api/notes', (req, res) => {
-    const { tag } = req.query;
-
-    if(tag)
-      db.all(`SELECT notes.id, notes.title, notes.content, notes.createdAt,
-        GROUP_CONCAT(tags.tag) as tags
-        FROM notes
-        LEFT JOIN tags ON notes.id = tags.noteId
-        WHERE tags.tag LIKE ?
-        GROUP BY notes.id`, [tag], (err, rows) => {
-          if (err) {
-            return res.status(500).json({ error: 'Failed to fetch notes' });
-          }
-    
-          // Transform the tags string into an array
-          const transformedRows = rows.map(row => ({
-            ...row,
-            tags: row.tags ? row.tags.split(',') : []
-          }));
-          // console.log(transformedRows)
-          res.json(transformedRows);
-        });
-    else
-      db.all(`SELECT n.id, n.title, n.content, n.createdAt, 
-              GROUP_CONCAT(t.tag) AS tags
-              FROM notes n
-              LEFT JOIN tags t ON INSTR(n.id, t.noteId) > 0
-              GROUP BY n.id`, [], (err, rows) => {
-        if (err) {
-          return res.status(500).json({ error: 'Failed to fetch notes' });
-        }
-
-        // Transform the tags string into an array
-        const transformedRows = rows.map(row => ({
-          ...row,
-          tags: row.tags ? row.tags.split(',') : []
-        }));
-        console.log(transformedRows)
-        res.json(transformedRows);
-      });
-});
-
-app.delete('/api/notes/:id', async (req, res) => {
-    const { id } = req.params;
-  
-    try{
-
-        await runAsync(`DELETE FROM notes WHERE id = ?`, [id]);
-        
-        await runAsync(`DELETE FROM tags WHERE noteId = ?`, [id]);
-
-        res.status(200).json({ message: 'Note deleted successfully' });
-
-    }catch(err){
-        return res.status(500).json({ error: 'Failed to delete note' });
-    }
-    
-  });
-
-app.delete('/api/tags/:noteId/:tagName', async (req, res)=>{
-  const { noteId, tagName } = req.params;
-
-  try{
-
-    console.log(noteId, tagName)
-    await runAsync(`DELETE FROM tags WHERE noteId = ? and tag = ?`, [noteId,tagName]);
-    res.status(200).json({ message: 'tag deleted successfully', noteId, tagName });
-
-  }catch(err){
-    return res.status(500).json({ error: 'Failed to delete tag' });
-
+  if (!title || !content) {
+    return res.status(400).json({ error: 'Title and content are required' });
   }
 
-})
-
-app.get('/api/tags', (req, res) => {
-    db.all(`SELECT tag from tags`, [], (err, rows) => {
-      if (err) {
-        return res.status(500).json({ error: 'Failed to fetch tags' });
-      }
-
-      const resultTags = [];
-      // Transform the tags string into an array
-      rows.forEach(row => {
-        resultTags.push(row.tag)
-      });
-      res.json(resultTags);
+  try {
+    const note = new Note({
+      title,
+      content,
+      tags: tags
     });
+
+    const savedNote = await note.save();
+    res.status(201).json(savedNote);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Failed to save note' });
+  }
 });
 
+// Route to get notes, optionally filtered by tag
+app.get('/api/notes', async (req, res) => {
+  const { tag } = req.query;
+
+  try {
+    let notes;
+    if (tag) {
+      notes = await Note.find({ tags: tag });
+    } else {
+      notes = await Note.find({});
+    }
+    res.json(notes);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Failed to fetch notes' });
+  }
+});
+
+// Route to delete a note
+app.delete('/api/notes/:id', async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    await Note.findByIdAndDelete(id);
+    res.status(200).json({ message: 'Note deleted successfully' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Failed to delete note' });
+  }
+});
+
+// Route to delete a specific tag from a note
+app.delete('/api/tags/:noteId/:tagName', async (req, res) => {
+  const { noteId, tagName } = req.params;
+
+  try {
+    const note = await Note.findById(noteId);
+    if (note) {
+      note.tags = note.tags.filter(tag => tag !== tagName);
+      await note.save();
+      res.status(200).json({ message: 'Tag deleted successfully', noteId, tagName });
+    } else {
+      res.status(404).json({ error: 'Note not found' });
+    }
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Failed to delete tag' });
+  }
+});
+
+// Route to get all tags
+app.get('/api/tags', async (req, res) => {
+  try {
+    const notes = await Note.find({});
+    const allTags = new Set();
+    notes.forEach(note => {
+      note.tags.forEach(tag => allTags.add(tag));
+    });
+    res.json([...allTags]);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Failed to fetch tags' });
+  }
+});
+
+// Test route
 app.get('/', (req, res) => {
-  res.json("Server is running")
+  res.json("Server is running");
 });
 
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);
 });
-
 
 module.exports = app;

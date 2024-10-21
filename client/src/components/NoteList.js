@@ -20,27 +20,28 @@ function NoteList({ notes,setNotes, filteredNotes, onNoteDeleted, setFilteredNot
 
   const deleteTag = (e) => {
     // call delete tag api
-    const noteId = e.target.dataset.noteid;
-    const tagName = e.target.name
+    const noteId = e.currentTarget.dataset.noteid;
+    const tagName = e.currentTarget.name
+
     axios
       .delete(`${apiUrl}/tags/${noteId}/${tagName}`)
       .then((response) => {
         const {noteId, tagName} = response.data;
         
         setFilteredNotes(notes.map((note) => ({
-          id: note.id,
+          _id: note._id,
           title: note.title,
           content: note.content,
           createdAt: note.createdAt,
-          tags: noteId === note.id ? note.tags.filter((tag)=>tag !== tagName): note.tags
+          tags: noteId === note._id ? note.tags.filter((tag)=>tag !== tagName): note.tags
         })));
 
         setNotes(notes.map((note) => ({
-          id: note.id,
+          _id: note._id,
           title: note.title,
           content: note.content,
           createdAt: note.createdAt,
-          tags: noteId === note.id ? note.tags.filter((tag)=>tag !== tagName): note.tags
+          tags: noteId === note._id ? note.tags.filter((tag)=>tag !== tagName): note.tags
         })));
 
       })
@@ -121,13 +122,13 @@ function NoteList({ notes,setNotes, filteredNotes, onNoteDeleted, setFilteredNot
               {note.tags.map((tag) => (
                 <p className="tag" key={tag}>
                   {tag}
-                  <button data-noteid={note.id} name={tag} onClick={deleteTag}>x</button>
+                  <button data-noteid={note._id} key={tag} name={tag} onClick={deleteTag}>x</button>
                 </p>
               ))}
             </span>
             <button
               className="delete-button"
-              onClick={() => handleDeleteClick(note.id, onNoteDeleted)}
+              onClick={() => handleDeleteClick(note._id, onNoteDeleted)}
             >
               <FontAwesomeIcon icon={faTrash} />
             </button>

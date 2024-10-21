@@ -35,8 +35,8 @@ function App() {
   };
 
   const handleNoteDeleted = (deletedId) => {
-    setNotes(notes.filter((note) => note.id !== deletedId));
-    setFilteredNotes(filteredNotes.filter((note) => note.id !== deletedId));
+    setNotes(notes.filter((note) => note._id !== deletedId));
+    setFilteredNotes(filteredNotes.filter((note) => note._id !== deletedId));
   };
 
   const handleTagSearchClick = () => {
