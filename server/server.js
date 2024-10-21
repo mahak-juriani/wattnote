@@ -44,6 +44,9 @@ app.use(cors({
   credentials : true
 }));
 
+app.options('*', cors());  // Allow preflight requests for all routes
+
+
 function runAsync(query, params) {
     return new Promise((resolve, reject) => {
         db.run(query, params, function (err) {
